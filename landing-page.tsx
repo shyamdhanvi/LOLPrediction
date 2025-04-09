@@ -19,12 +19,41 @@ export default function LandingPage() {
     region: "",
     predictionType: "current",
   })
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    // This would redirect to the main prediction page
-    window.location.href = "/predict"
-  }
+  const [playVideo, setPlayVideo] = useState(false);
+  const [predictionResult, setPredictionResult] = useState<any | null>(null);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const payload = {
+      riot_user_name: formData.riotId,   
+      riot_tag_line: formData.tagline,     
+      region: formData.region,                   
+      prediction_type: formData.predictionType, 
+    };
+  
+    try {
+      const response = await fetch("http://localhost:5000/predict", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+  
+      const result = await response.json();
+      if (response.ok) {
+        console.log("Prediction Result:", result);
+        setPredictionResult(result)
+        // Redirect or show result on UI
+        // e.g., setPredictionResult(result);
+      } else {
+        console.error("Prediction Error:", result.error);
+        alert(result.error);
+      }
+    } catch (error) {
+      console.error("Error connecting to Flask server:", error);
+      alert("Could not connect to prediction server.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#0A1428] text-white">
@@ -56,10 +85,12 @@ export default function LandingPage() {
             >
               Sign In
             </Button>
+            <Link href='#predict'>
             <Button className="bg-[#0AC8B9] hover:bg-[#0AC8B9]/80 text-[#091428]">
               Get Started
-              <ChevronRight className="ml-1 h-4 w-4" />
+              <ChevronRight className="ml-1 h-1 w-1" />
             </Button>
+            </Link>
           </div>
         </div>
       </header>
@@ -70,7 +101,7 @@ export default function LandingPage() {
           {/* Background Image */}
           <div className="absolute inset-0 z-0">
             <Image
-              src="/placeholder.svg?height=800&width=1920"
+              src="/hero.svg?height=800&width=1920"
               alt="League of Legends Champions"
               fill
               className="object-cover opacity-20"
@@ -90,10 +121,12 @@ export default function LandingPage() {
                   the edge you need to climb the ranks.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button className="bg-[#0AC8B9] hover:bg-[#0AC8B9]/80 text-[#091428] text-lg py-6 px-8">
-                    Try It Now
-                    <ChevronRight className="ml-1 h-5 w-5" />
-                  </Button>
+                <Link href="#predict">
+                    <Button className="bg-[#0AC8B9] hover:bg-[#0AC8B9]/80 text-[#091428] text-lg py-6 px-8">
+                      Try It Now
+                      <ChevronRight className="ml-1 h-5 w-5" />
+                    </Button>
+                  </Link>
                   <Button
                     variant="outline"
                     className="border-[#C89B3C] text-[#C89B3C] hover:bg-[#C89B3C] hover:text-[#091428] text-lg py-6 px-8"
@@ -102,25 +135,15 @@ export default function LandingPage() {
                   </Button>
                 </div>
               </div>
-              <div className="relative h-[400px] rounded-lg overflow-hidden shadow-2xl shadow-[#0AC8B9]/20">
-                <Image
-                  src="/placeholder.svg?height=400&width=600"
-                  alt="League of Legends Gameplay"
-                  fill
-                  className="object-cover rounded-lg"
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="w-16 h-16 rounded-full bg-black/50 border-white/50 hover:bg-black/70 hover:scale-110 transition-all"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
-                      <path d="M8 5v14l11-7z" />
-                    </svg>
-                    <span className="sr-only">Play video</span>
-                  </Button>
-                </div>
+              <div className="relative h-[450px] rounded-lg overflow-hidden shadow-2xl shadow-[#0AC8B9]/20">
+                <iframe
+                  className="w-full h-full"
+                  src="https://www.youtube-nocookie.com/embed/oautjk0v9pI?rel=0&modestbranding=1&autoplay=1&mute=1"
+                  title="League of Legends Gameplay"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                ></iframe>
               </div>
             </div>
           </div>
@@ -277,26 +300,60 @@ export default function LandingPage() {
                 Watch how our prediction tool works and how it can help you improve your gameplay.
               </p>
             </div>
-
             <div className="relative max-w-4xl mx-auto h-[500px] rounded-lg overflow-hidden shadow-2xl shadow-[#0AC8B9]/20">
-              <Image
-                src="/placeholder.svg?height=500&width=900"
-                alt="League of Legends Gameplay"
-                fill
-                className="object-cover rounded-lg"
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="w-20 h-20 rounded-full bg-black/50 border-white/50 hover:bg-black/70 hover:scale-110 transition-all"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-10 h-10">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                  <span className="sr-only">Play video</span>
-                </Button>
-              </div>
+              {!playVideo ? (
+                <>
+                  {/* YouTube Thumbnail */}
+                  <img
+                    src="https://img.youtube.com/vi/Oza63bLiJRg/maxresdefault.jpg"
+                    alt="League of Legends Gameplay"
+                    className="object-cover w-full h-full rounded-lg"
+                  />
+
+                  {/* Golden Play Button */}
+                  <div
+                    className="absolute inset-0 flex items-center justify-center cursor-pointer"
+                    onClick={() => setPlayVideo(true)}
+                  >
+                    <svg
+                      viewBox="0 0 100 100"
+                      style={{ width: "88px", height: "88px" }}
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <defs>
+                        <linearGradient id="playBtn_goldGradCenter" x1="12.6005" y1="47.5209" x2="86.6005" y2="47.5209">
+                          <stop offset="0" stopColor="rgb(137, 107, 55)" />
+                          <stop offset="0.5" stopColor="rgb(200, 180, 86)" />
+                          <stop offset="1" stopColor="rgb(137, 107, 55)" />
+                        </linearGradient>
+                        <linearGradient id="playBtn_goldGradTop" x1="53.4222" y1="27.9995" x2="53.4222" y2="67.0005">
+                          <stop offset="0" stopColor="rgb(195, 165, 93)" />
+                          <stop offset="1" stopColor="rgb(104, 74, 32)" />
+                        </linearGradient>
+                      </defs>
+                      <circle fill="url(#playBtn_goldGradTop)" cx="50" cy="50" r="43.5" />
+                      <circle fill="#000" cx="50" cy="50" r="41" />
+                      <g>
+                        <circle fill="url(#playBtn_goldGradCenter)" cx="50" cy="50" r="34" />
+                        <circle fill="#000" cx="50" cy="50" r="30" />
+                        <path
+                          fill="url(#playBtn_goldGradTop)"
+                          d="M68.29,49.69l-28-16.5v33L68.29,49.69"
+                        />
+                      </g>
+                    </svg>
+                  </div>
+                </>
+              ) : (
+                <iframe
+                  className="w-full h-full rounded-lg"
+                  src="https://www.youtube-nocookie.com/embed/Oza63bLiJRg?autoplay=1&modestbranding=1&rel=0"
+                  title="League of Legends Gameplay"
+                  frameBorder="0"
+                  allow="autoplay; encrypted-media"
+                  allowFullScreen
+                ></iframe>
+              )}
             </div>
           </div>
         </section>
@@ -334,7 +391,7 @@ export default function LandingPage() {
                       D
                     </div>
                     <div>
-                      <div className="font-semibold">DariusMain99</div>
+                      <div className="font-semibold text-white">DariusMain99</div>
                       <div className="text-sm text-gray-400">Diamond II</div>
                     </div>
                   </div>
@@ -363,7 +420,7 @@ export default function LandingPage() {
                       L
                     </div>
                     <div>
-                      <div className="font-semibold">LuxSupport</div>
+                      <div className="font-semibold text-white">LuxSupport</div>
                       <div className="text-sm text-gray-400">Platinum III</div>
                     </div>
                   </div>
@@ -392,7 +449,7 @@ export default function LandingPage() {
                       Y
                     </div>
                     <div>
-                      <div className="font-semibold">YasuoOrAFK</div>
+                      <div className="font-semibold text-white">YasuoOrAFK</div>
                       <div className="text-sm text-gray-400">Gold I</div>
                     </div>
                   </div>
@@ -403,7 +460,7 @@ export default function LandingPage() {
         </section>
 
         {/* Try It Now Section */}
-        <section className="py-20 bg-[#0A1428]">
+        <section id="predict" className="py-20 bg-[#0A1428]">
           <div className="container px-4">
             <div className="max-w-4xl mx-auto bg-gradient-to-r from-[#0E2029] to-[#17313A] rounded-lg p-8 md:p-12 shadow-xl">
               <div className="grid md:grid-cols-2 gap-8 items-center">
@@ -438,17 +495,18 @@ export default function LandingPage() {
                         <SelectValue placeholder="Select Region" />
                       </SelectTrigger>
                       <SelectContent className="bg-[#091428] border-[#17313A] text-white">
-                        <SelectItem value="na1">North America (NA)</SelectItem>
-                        <SelectItem value="euw1">Europe West (EUW)</SelectItem>
-                        <SelectItem value="eun1">Europe Nordic & East (EUNE)</SelectItem>
-                        <SelectItem value="kr">Korea (KR)</SelectItem>
-                        <SelectItem value="br1">Brazil (BR)</SelectItem>
-                        <SelectItem value="la1">Latin America North (LAN)</SelectItem>
-                        <SelectItem value="la2">Latin America South (LAS)</SelectItem>
-                        <SelectItem value="oc1">Oceania (OCE)</SelectItem>
-                        <SelectItem value="ru">Russia (RU)</SelectItem>
-                        <SelectItem value="tr1">Turkey (TR)</SelectItem>
-                        <SelectItem value="jp1">Japan (JP)</SelectItem>
+                        <SelectItem value="NA">North America (NA)</SelectItem>
+                        <SelectItem value="EUW">Europe West (EUW)</SelectItem>
+                        <SelectItem value="EUNE">Europe Nordic & East (EUNE)</SelectItem>
+                        <SelectItem value="KR">Korea (KR)</SelectItem>
+                        <SelectItem value="BR">Brazil (BR)</SelectItem>
+                        <SelectItem value="LAN">Latin America North (LAN)</SelectItem>
+                        <SelectItem value="LAS">Latin America South (LAS)</SelectItem>
+                        <SelectItem value="OCE">Oceania (OCE)</SelectItem>
+                        <SelectItem value="RU">Russia (RU)</SelectItem>
+                        <SelectItem value="TR">Turkey (TR)</SelectItem>
+                        <SelectItem value="JP">Japan (JP)</SelectItem>
+                        <SelectItem value="TW">Taiwan (TW)</SelectItem>
                       </SelectContent>
                     </Select>
                     <Select
@@ -468,14 +526,45 @@ export default function LandingPage() {
                     </Button>
                   </form>
                 </div>
-                <div className="relative h-[300px] rounded-lg overflow-hidden shadow-lg">
-                  <Image
-                    src="/placeholder.svg?height=300&width=400"
-                    alt="League of Legends Champion"
-                    fill
-                    className="object-cover rounded-lg"
-                  />
-                </div>
+                <div className="relative h-[300px] rounded-lg overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.6)]">
+                    {predictionResult ? (
+                        <div className="flex flex-col justify-center items-center h-full text-white px-6 py-4 space-y-4">
+                          <h2 className="text-2xl font-bold text-center text-white">Prediction Result</h2>
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-3 w-full text-sm md:text-base">
+                            <div className="text-right text-gray-400 font-medium">Team:</div>
+                            <div className="text-left">{predictionResult.team}</div>
+
+                            <div className="text-right text-gray-400 font-medium">Role:</div>
+                            <div className="text-left">{predictionResult.role}</div>
+
+                            <div className="text-right text-gray-400 font-medium">Champion:</div>
+                            <div className="text-left">{predictionResult.champion}</div>
+
+                            <div className="text-right text-gray-400 font-medium">Match Won:</div>
+                            <div className="text-left">{predictionResult.won ? "Yes" : "No"}</div>
+
+                            <div className="text-right text-gray-400 font-medium">Prediction Correct:</div>
+                            <div className="text-left">
+                              {predictionResult.correct && predictionResult.correct.length > 0
+                                ? predictionResult.correct[0] === true
+                                  ? "Yes"
+                                  : "No"
+                                : "Pending"}
+                            </div>
+                          </div>
+                        </div>
+                        ) : (
+                          <div
+                            className="rounded-2xl w-full h-full"
+                            style={{
+                              backgroundImage: `url("https://cmsassets.rgpub.io/sanity/images/dsfx7636/universe/db24370ba8674557039c865f6ce0d92128881326-1215x717.jpg")`,
+                              backgroundPosition: "76.1317% 3.06834%",
+                              backgroundSize: "250%",
+                              backgroundRepeat: "no-repeat",
+                            }}
+                          ></div>
+                        )}
+                  </div>
               </div>
             </div>
           </div>
